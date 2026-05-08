@@ -496,6 +496,7 @@ def parse_command(message: str) -> dict:
     # ── WhatsApp ──
     wa_triggers = [
         "open whatsapp and drop a message to ", "open whatsapp and message ", "open whatsapp and send a message to ", "open whatsapp and text ",
+        "open whatsapp drop a message to ", "open whatsapp drap a message to ", "open whatsapp message ", "open whatsapp send a message to ", "open whatsapp text ",
         "send whatsapp to ", "whatsapp ", "message ", "send message to ", "text "
     ]
     for t in wa_triggers:
@@ -509,6 +510,23 @@ def parse_command(message: str) -> dict:
                     name = rest[:idx].strip()
                     message_text = rest[idx + len(sep):].strip()
                     break
+            
+            if not message_text:
+                contacts = load_contacts()
+                best_match = ""
+                for k in contacts.keys():
+                    if rest.lower().startswith(k.lower()):
+                        if len(k) > len(best_match):
+                            best_match = k
+                
+                if best_match:
+                    name = best_match
+                    message_text = rest[len(best_match):].strip()
+                elif " " in rest:
+                    parts = rest.split(" ", 1)
+                    name = parts[0].strip()
+                    message_text = parts[1].strip()
+
             return {"reply": send_whatsapp(name, message_text or "Hello!"), "type": "messaging"}
 
     # ── Open app ──
